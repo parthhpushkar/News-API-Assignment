@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News API - Top Headlines</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 20px;
+        }
+
+        .error {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .news-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+        }
+
+        .news-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .news-image {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .news-content {
+            flex: 1;
+        }
+
+        .news-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .news-description {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .read-more {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            font-weight: 500;
+        }
+
+        .read-more:hover {
+            background: #764ba2;
+        }
+
+        @media (max-width: 768px) {
+            .news-item {
+                flex-direction: column;
+            }
+
+            .news-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📰 Top News Headlines</h1>
+        <div id="newsContainer" class="loading">Loading news...</div>
+    </div>
+
+    <script>
+        // Fetch news from the backend API
+        async function fetchNews() {
+            const newsContainer = document.getElementById('newsContainer');
+            
+            try {
+                const response = await fetch('/api/news');
+                const result = await response.json();
+
+                if (!result.success) {
+                    newsContainer.innerHTML = `<div class="error">${result.error}</div>`;
+                    return;
+                }
+
+                // Display news in a flat list
+                const newsList = result.data.map(article => `
+                    <div class="news-item">
+                        <img src="${article.image}" alt="${article.title}" class="news-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <div class="news-content">
+                            <h2 class="news-title">${article.title}</h2>
+                            <p class="news-description">${article.description || 'No description available'}</p>
+                            <a href="${article.url}" target="_blank" class="read-more">Read Full Article</a>
+                        </div>
+                    </div>
+                `).join('');
+
+                newsContainer.innerHTML = `<div class="news-list">${newsList}</div>`;
+            } catch (error) {
+                console.error('Error:', error);
+                newsContainer.innerHTML = `<div class="error">Failed to load news. Please try again later.</div>`;
+            }
+        }
+
+        // Fetch news when page loads
+        window.addEventListener('DOMContentLoaded', fetchNews);
+    </script>
+</body>
+</html>
